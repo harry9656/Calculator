@@ -1,6 +1,5 @@
 $(document).ready(function(){
 	var register = [];
-	var value = "0";
 	$(".register").html("0");
 	$("li").click(function(){		
 		var button = $(this).html();
@@ -35,47 +34,49 @@ $(document).ready(function(){
 			break;
 			case "/": add("/");
 			break;
+			case "(": add("(");
+			break;
+			case ")": add(")");
+			break;
+			case ".": add(".");
+			break;
 			case "=": evaluateRegister();
 			break;
 		}
 
 		function add(data){
-			if(register.length === 0) clearRegister(); 
 			var lastValue = register[register.length-1];
-			if((register.length !== 0) && (data === "+" || data === "-" || data === "*" || data === "/")){
-				if(!(lastValue !== "+" && lastValue !== "-" && lastValue !== "*" && lastValue !== "/")){
+			if((register.length !== 0) && /[+\-*\/]/.test(data)){
+				// Check if the expression has been evaluated
+				if(/[=]/.test(register.join(""))) register.shift();
+				// Don't concatenate operators
+				if(/[+\-*\/]/.test(lastValue)){
 					register[register.length-1] = data;
 				} else {
 					register.push(data);
 				}
-				$(".register").html(register);
-				value = "0";
-			}
-			if($.isNumeric(data)){
+			} else if(/[0-9]/.test(data) || /[\(\).]/.test(data)){
+				if(/[=]/.test(register.join(""))) clearRegister();
 				register.push(data);
-				if(value == "0"){
-					value = ""+data+""; // Avoid coercion
-				} else {
-					value = value + data;
-				}
 			}
-			$(".calculatorScreen").html(value);
-		}
+			// update screen
+			$(".register").html(register);
+		} // add function
+
 		function evaluateRegister(){
 			var lastValue = register[register.length-1];
-			if(lastValue === "+" || lastValue === "-" || lastValue === "*" || lastValue === "/"){
+			if(/[+\-*\/]/.test(lastValue)){
 				register.pop();
 			}
-			$(".register").html(register.join("") + "=");
-			$(".calculatorScreen").html(eval(register.join("")));
-			register = [];
-			value = "0";
-		}
+			var evaluation = eval(register.join(""));
+			$(".register").html(register.join("") +"="+ evaluation);
+			// update the register with = in front to let know that expresison has been evaluated
+			register = ["=",evaluation];
+		} // evaluateRegister function
+
 		function clearRegister(){
 			register = [];
-			$(".register").html(register.join(""));
-			value = "0";
-			$(".calculatorScreen").html(value);
+			$(".register").html("Cleared");
 		}
 	});
 });
